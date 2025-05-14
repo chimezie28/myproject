@@ -29,12 +29,12 @@ export class UserService {
         }
     
         // Step 3: Encrypt password
-        const encrypted_password = await hashPassword(userDto.password);  
+        const password = await hashPassword(userDto.password);  
         // Step 5: Create user
         const user = await User.create({
           full_name,
           email,
-          encrypted_password
+          password
         });
     
         // Step 6: Generate session token and update user session ID
@@ -52,7 +52,7 @@ export class UserService {
 
   async login({ email, password }: LoginUserDto) {
     const user = await User.findOne({ where: { email } });
-    if (!user || !(await comparePasswords(password, user.encrypted_password))) {
+    if (!user || !(await comparePasswords(password, user.password))) {
       throw new Error('Invalid credentials');
     }
     return user;
@@ -66,12 +66,12 @@ export class UserService {
     const transporter = nodemailer.createTransport({
           service: 'Gmail',
           auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS,
+            user: 'petertechy01@gmail.com',
+            pass: 'cwko ojme cgys qzqo',
           },
         });
     
-        const resetLink = `http://localhost:3000/reset-password/${token}`;
+        const resetLink = `https://insemigen-marketplace-backend-9.onrender.com/${token}`;
         await transporter.sendMail({
           from: process.env.EMAIL_USER,
           to: email,
@@ -85,7 +85,7 @@ export class UserService {
   async resetPassword({ token, newPassword }: ResetPasswordDto) {
     const user = await User.findOne({ where: { reset_password_token: token } });
     if (!user) throw new Error('Invalid token');
-    user.encrypted_password = await hashPassword(newPassword);
+    user.password = await hashPassword(newPassword);
     // user.reset_password_token = null;
     await user.save();
     return user;

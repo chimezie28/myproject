@@ -1,60 +1,50 @@
 import { DataTypes, Model, Optional } from 'sequelize';
 import sequelize from '../config/db';
-import Product from './products';
-import User from './users';
 
-interface ProductReviewsAttributes {
+interface ProductReviewAttributes {
   id: number;
-  product_id: number;
   user_id: number;
+  product_id: number;
   rating: number;
-  comment?: string;
+  review: string;
   created_at?: Date;
   updated_at?: Date;
 }
 
-interface ProductReviewsCreationAttributes extends Optional<ProductReviewsAttributes, 'id'> {}
+interface ProductReviewCreationAttributes extends Optional<ProductReviewAttributes, 'id'> {}
 
-class ProductReviews extends Model<ProductReviewsAttributes, ProductReviewsCreationAttributes> implements ProductReviewsAttributes {
+class ProductReview extends Model<ProductReviewAttributes, ProductReviewCreationAttributes>
+  implements ProductReviewAttributes {
   public id!: number;
-  public product_id!: number;
   public user_id!: number;
+  public product_id!: number;
   public rating!: number;
-  public comment?: string;
+  public review!: string;
   public readonly created_at!: Date;
   public readonly updated_at!: Date;
 }
 
-ProductReviews.init(
+ProductReview.init(
   {
     id: {
       type: DataTypes.BIGINT,
       autoIncrement: true,
       primaryKey: true,
     },
-    product_id: {
-      type: DataTypes.BIGINT,
-      allowNull: false,
-    },
-    user_id: {
-      type: DataTypes.BIGINT,
-      allowNull: false,
-    },
-    rating: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    comment: DataTypes.TEXT,
+    user_id: DataTypes.BIGINT,
+    product_id: DataTypes.BIGINT,
+    rating: DataTypes.INTEGER,
+    review: DataTypes.TEXT,
     created_at: DataTypes.DATE,
     updated_at: DataTypes.DATE,
   },
   {
     sequelize,
-    modelName: 'ProductReviews',
+    modelName: 'ProductReview',
     tableName: 'product_reviews',
     timestamps: true,
     underscored: true,
   }
 );
 
-export default ProductReviews;
+export default ProductReview;

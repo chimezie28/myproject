@@ -4,9 +4,9 @@ import sequelize from '../config/db';
 interface AnimalSpeciesAttributes {
   id: number;
   name: string;
-  date_created: Date;
-  last_date_modified: Date;
-  image_url: string;
+  date_created?: Date;
+  last_date_modified?: Date;
+  image_url?: string;
 }
 
 interface AnimalSpeciesCreationAttributes extends Optional<AnimalSpeciesAttributes, 'id'> {}
@@ -14,9 +14,9 @@ interface AnimalSpeciesCreationAttributes extends Optional<AnimalSpeciesAttribut
 class AnimalSpecies extends Model<AnimalSpeciesAttributes, AnimalSpeciesCreationAttributes> implements AnimalSpeciesAttributes {
   public id!: number;
   public name!: string;
-  public date_created!: Date;
-  public last_date_modified!: Date;
-  public image_url!: string;
+  public date_created?: Date;
+  public last_date_modified?: Date;
+  public image_url?: string;
 }
 
 AnimalSpecies.init(
@@ -26,7 +26,10 @@ AnimalSpecies.init(
       autoIncrement: true,
       primaryKey: true,
     },
-    name: DataTypes.STRING,
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     date_created: DataTypes.DATE,
     last_date_modified: DataTypes.DATE,
     image_url: DataTypes.STRING,
@@ -35,7 +38,7 @@ AnimalSpecies.init(
     sequelize,
     modelName: 'AnimalSpecies',
     tableName: 'animal_species',
-    timestamps: true,
+    timestamps: false,
     underscored: true,
   }
 );

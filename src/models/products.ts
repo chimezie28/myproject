@@ -1,8 +1,16 @@
-import { DataTypes, Model, Optional } from 'sequelize';
+import {
+  DataTypes,
+  Model,
+  Optional,
+  HasManyAddAssociationMixin,
+  HasManySetAssociationsMixin,
+  HasManyGetAssociationsMixin,
+  HasManyHasAssociationMixin,
+  HasManyCountAssociationsMixin,
+  HasManyCreateAssociationMixin
+} from 'sequelize';
 import sequelize from '../config/db';
-import User from './users';
-import AnimalBreed from './animal_breeds';
-import AnimalSpecies from './animal_species';
+import ProductMedia from './product_media';
 
 interface ProductAttributes {
   id: number;
@@ -12,9 +20,9 @@ interface ProductAttributes {
   discount: number;
   tax: number;
   stock: number;
-  expiration_date: Date;
+  expiration_date: Date | null;
   animal_name: string;
-  animal_dob: Date;
+  animal_dob: Date | null;
   animal_weight: number;
   height: number;
   health_condition: string;
@@ -26,7 +34,7 @@ interface ProductAttributes {
   updated_at?: Date;
 }
 
-interface ProductCreationAttributes extends Optional<ProductAttributes, 'id'> {}
+interface ProductCreationAttributes extends Optional<ProductAttributes, 'id' | 'breed_id' | 'species_id' | 'created_at' | 'updated_at'> {}
 
 class Product extends Model<ProductAttributes, ProductCreationAttributes> implements ProductAttributes {
   public id!: number;
@@ -48,6 +56,14 @@ class Product extends Model<ProductAttributes, ProductCreationAttributes> implem
   public species_id?: number;
   public readonly created_at!: Date;
   public readonly updated_at!: Date;
+
+  // 🔗 Association Mixins
+  public setMedia!: HasManySetAssociationsMixin<ProductMedia, number>;
+  public getMedia!: HasManyGetAssociationsMixin<ProductMedia>;
+  public addMedia!: HasManyAddAssociationMixin<ProductMedia, number>;
+  public hasMedia!: HasManyHasAssociationMixin<ProductMedia, number>;
+  public countMedia!: HasManyCountAssociationsMixin;
+  public createMedia!: HasManyCreateAssociationMixin<ProductMedia>;
 }
 
 Product.init(
@@ -57,19 +73,45 @@ Product.init(
       autoIncrement: true,
       primaryKey: true,
     },
-    title: DataTypes.STRING,
-    price: DataTypes.FLOAT,
-    description: DataTypes.TEXT,
-    discount: DataTypes.FLOAT,
-    tax: DataTypes.FLOAT,
-    stock: DataTypes.INTEGER,
-    expiration_date: DataTypes.DATE,
-    animal_name: DataTypes.STRING,
-    animal_dob: DataTypes.DATE,
-    animal_weight: DataTypes.FLOAT,
-    height: DataTypes.FLOAT,
-    health_condition: DataTypes.TEXT,
-    address: DataTypes.STRING,
+    title: {
+      type: DataTypes.STRING,
+    },
+    price: {
+      type: DataTypes.FLOAT,
+    },
+    description: {
+      type: DataTypes.TEXT,
+    },
+    discount: {
+      type: DataTypes.FLOAT,
+    },
+    tax: {
+      type: DataTypes.FLOAT,
+    },
+    stock: {
+      type: DataTypes.INTEGER,
+    },
+    expiration_date: {
+      type: DataTypes.DATE,
+    },
+    animal_name: {
+      type: DataTypes.STRING,
+    },
+    animal_dob: {
+      type: DataTypes.DATE,
+    },
+    animal_weight: {
+      type: DataTypes.FLOAT,
+    },
+    height: {
+      type: DataTypes.FLOAT,
+    },
+    health_condition: {
+      type: DataTypes.TEXT,
+    },
+    address: {
+      type: DataTypes.STRING,
+    },
     user_id: {
       type: DataTypes.BIGINT,
       allowNull: false,
@@ -82,8 +124,12 @@ Product.init(
       type: DataTypes.BIGINT,
       allowNull: true,
     },
-    created_at: DataTypes.DATE,
-    updated_at: DataTypes.DATE,
+    created_at: {
+      type: DataTypes.DATE,
+    },
+    updated_at: {
+      type: DataTypes.DATE,
+    },
   },
   {
     sequelize,

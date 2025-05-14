@@ -3,10 +3,10 @@ import sequelize from '../config/db';
 import Product from './products';
 import User from './users';
 import ContactInfo from './contact_info';
-import PaymentMethods from './payment_methods';
-import DeliveryMethods from './delivery_methods';
+import PaymentMethod from './payment_methods';
+import OrderDelivery from './orderDelivery';
 
-interface OrdersAttributes {
+interface OrderAttributes {
   id: number;
   product_id: number;
   quantity: number;
@@ -14,15 +14,16 @@ interface OrdersAttributes {
   seller_id: number;
   buyer_id: number;
   contact_info_id: number;
-  payment_method_id: number;
-  delivery_method_id: number;
+  payment_method: number;
+  delivery_method: number;
   created_at?: Date;
   updated_at?: Date;
+  order_reference: string;
 }
 
-interface OrdersCreationAttributes extends Optional<OrdersAttributes, 'id'> {}
+interface OrderCreationAttributes extends Optional<OrderAttributes, 'id'> {}
 
-class Orders extends Model<OrdersAttributes, OrdersCreationAttributes> implements OrdersAttributes {
+class Order extends Model<OrderAttributes, OrderCreationAttributes> implements OrderAttributes {
   public id!: number;
   public product_id!: number;
   public quantity!: number;
@@ -30,13 +31,14 @@ class Orders extends Model<OrdersAttributes, OrdersCreationAttributes> implement
   public seller_id!: number;
   public buyer_id!: number;
   public contact_info_id!: number;
-  public payment_method_id!: number;
-  public delivery_method_id!: number;
-  public readonly created_at!: Date;
-  public readonly updated_at!: Date;
+  public payment_method!: number;
+  public delivery_method!: number;
+  public created_at?: Date;
+  public updated_at?: Date;
+  public order_reference!: string;
 }
 
-Orders.init(
+Order.init(
   {
     id: {
       type: DataTypes.BIGINT,
@@ -47,8 +49,14 @@ Orders.init(
       type: DataTypes.BIGINT,
       allowNull: false,
     },
-    quantity: DataTypes.INTEGER,
-    price: DataTypes.FLOAT,
+    quantity: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    price: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+    },
     seller_id: {
       type: DataTypes.BIGINT,
       allowNull: false,
@@ -59,26 +67,36 @@ Orders.init(
     },
     contact_info_id: {
       type: DataTypes.BIGINT,
-      allowNull: true,
     },
-    payment_method_id: {
+    payment_method: {
       type: DataTypes.BIGINT,
-      allowNull: true,
+      allowNull: false,
     },
-    delivery_method_id: {
+    delivery_method: {
       type: DataTypes.BIGINT,
-      allowNull: true,
+      allowNull: false,
     },
     created_at: DataTypes.DATE,
     updated_at: DataTypes.DATE,
+    order_reference: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
   },
   {
     sequelize,
-    modelName: 'Orders',
+    modelName: 'Order',
     tableName: 'orders',
     timestamps: true,
     underscored: true,
   }
 );
 
-export default Orders;
+Order.belongsTo(Product, { foreignKey: 'product_id' });
+Order.belongsTo(User, { foreignKey: 'seller_id' });
+Order.belongsTo(User, { foreignKey: 'buyer_id' });
+Order.belongsTo(ContactInfo, { foreignKey: 'contact_info_id' });
+Order.belongsTo(PaymentMethod, { foreignKey: 'payment_method' });
+Order.belongsTo(OrderDelivery, { foreignKey: 'delivery_method' });
+
+export default Order;

@@ -1,40 +1,55 @@
 import { DataTypes, Model, Optional } from 'sequelize';
 import sequelize from '../config/db';
 
-interface PaymentMethodsAttributes {
+interface PaymentMethodAttributes {
   id: number;
   name: string;
+  reference: string;
   currency: string;
   date: Date;
 }
 
-interface PaymentMethodsCreationAttributes extends Optional<PaymentMethodsAttributes, 'id'> {}
+interface PaymentMethodCreationAttributes extends Optional<PaymentMethodAttributes, 'id'> {}
 
-class PaymentMethods extends Model<PaymentMethodsAttributes, PaymentMethodsCreationAttributes> implements PaymentMethodsAttributes {
+class PaymentMethod extends Model<PaymentMethodAttributes, PaymentMethodCreationAttributes> implements PaymentMethodAttributes {
   public id!: number;
   public name!: string;
+  public reference!: string;
   public currency!: string;
   public date!: Date;
 }
 
-PaymentMethods.init(
+PaymentMethod.init(
   {
     id: {
       type: DataTypes.BIGINT,
       autoIncrement: true,
       primaryKey: true,
     },
-    name: DataTypes.STRING,
-    currency: DataTypes.STRING,
-    date: DataTypes.DATE,
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    reference: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    currency: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    date: {
+      type: DataTypes.DATE,
+      allowNull: false,
+    },
   },
   {
     sequelize,
-    modelName: 'PaymentMethods',
+    modelName: 'PaymentMethod',
     tableName: 'payment_methods',
-    timestamps: true,
+    timestamps: false,
     underscored: true,
   }
 );
 
-export default PaymentMethods;
+export default PaymentMethod;

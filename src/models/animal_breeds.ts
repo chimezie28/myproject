@@ -6,9 +6,9 @@ interface AnimalBreedAttributes {
   id: number;
   name: string;
   animal_species_id: number;
-  date_created: Date;
-  date_modified: Date;
-  image_url: string;
+  date_created?: Date;
+  date_modified?: Date;
+  image_url?: string;
 }
 
 interface AnimalBreedCreationAttributes extends Optional<AnimalBreedAttributes, 'id'> {}
@@ -17,9 +17,9 @@ class AnimalBreed extends Model<AnimalBreedAttributes, AnimalBreedCreationAttrib
   public id!: number;
   public name!: string;
   public animal_species_id!: number;
-  public date_created!: Date;
-  public date_modified!: Date;
-  public image_url!: string;
+  public date_created?: Date;
+  public date_modified?: Date;
+  public image_url?: string;
 }
 
 AnimalBreed.init(
@@ -29,7 +29,10 @@ AnimalBreed.init(
       autoIncrement: true,
       primaryKey: true,
     },
-    name: DataTypes.STRING,
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     animal_species_id: {
       type: DataTypes.BIGINT,
       allowNull: false,
@@ -42,7 +45,7 @@ AnimalBreed.init(
     sequelize,
     modelName: 'AnimalBreed',
     tableName: 'animal_breeds',
-    timestamps: true,
+    timestamps: false,
     underscored: true,
   }
 );

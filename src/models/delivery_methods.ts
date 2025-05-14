@@ -1,43 +1,41 @@
 import { DataTypes, Model, Optional } from 'sequelize';
 import sequelize from '../config/db';
 
-interface DeliveryMethodsAttributes {
+interface DeliveryMethodAttributes {
   id: number;
   name: string;
-  created_at: Date;
-  updated_at: Date;
+  created_at?: Date;
+  updated_at?: Date;
 }
 
-interface DeliveryMethodsCreationAttributes extends Optional<DeliveryMethodsAttributes, 'id'> {}
+interface DeliveryMethodCreationAttributes extends Optional<DeliveryMethodAttributes, 'id'> {}
 
-class DeliveryMethods extends Model<DeliveryMethodsAttributes, DeliveryMethodsCreationAttributes> implements DeliveryMethodsAttributes {
+class DeliveryMethod extends Model<DeliveryMethodAttributes, DeliveryMethodCreationAttributes>
+  implements DeliveryMethodAttributes {
   public id!: number;
   public name!: string;
-  public created_at!: Date;
-  public updated_at!: Date;
+  public readonly created_at!: Date;
+  public readonly updated_at!: Date;
 }
 
-DeliveryMethods.init(
+DeliveryMethod.init(
   {
     id: {
       type: DataTypes.BIGINT,
       autoIncrement: true,
       primaryKey: true,
     },
-    name: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
+    name: DataTypes.STRING,
     created_at: DataTypes.DATE,
     updated_at: DataTypes.DATE,
   },
   {
     sequelize,
-    modelName: 'DeliveryMethods',
+    modelName: 'DeliveryMethod',
     tableName: 'delivery_methods',
     timestamps: true,
     underscored: true,
   }
 );
 
-export default DeliveryMethods;
+export default DeliveryMethod;

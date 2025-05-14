@@ -1,18 +1,26 @@
-import {Sequelize} from 'sequelize-typescript'
+import { Sequelize } from 'sequelize-typescript';
 
 const sequelize = new Sequelize(
-  process.env.DB_NAME || 'your_db_name',
-  process.env.DB_USER || 'your_db_user',
-  process.env.DB_PASSWORD || 'your_db_password',
+  'postgres',
+  'postgres.djsahykbynicfoocbziw',
+  'D7PKywphIrKE2zNi',
   {
-    host: process.env.DB_HOST || 'localhost',
+    host: 'aws-0-eu-central-1.pooler.supabase.com',
+    port: 6543,
     dialect: 'postgres',
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false, // required for Supabase
+      },
+    },
     logging: false,
   }
 );
 
 export const connectToDatabase = async () => {
   try {
+    // console.log(process.env.DB_USER,);
     await sequelize.authenticate();
     console.log('✅ Database connection established.');
   } catch (error) {

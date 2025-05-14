@@ -1,8 +1,4 @@
-// import { Request, Response } from 'express';
-// import { registerUserSchema } from '../validators/user.validator';
-// import { createUser } from '../services/user.service';
-// import { loginUserSchema as loginSchema } from '../validators/user.validator'; // Renamed for clarity
-// import { loginUser as authenticateUser } from '../services/user.service'; // Renamed for clarity
+
 import nodemailer from 'nodemailer';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
@@ -25,76 +21,56 @@ type ForgotPasswordDto = TypeOf<typeof forgotPasswordSchema>;
 type ResetPasswordDto = TypeOf<typeof resetPasswordSchema>;
 
 const userService = new UserService();
-// export const registerUser = async (req: Request, res: Response): Promise<void> => {
-//   try {
-//     const parsed = registerUserSchema.safeParse(req.body);
-//     if (!parsed.success) {
-//       res.status(400).json({ errors: parsed.error.flatten() });
-//       return;
-//     }
-
-//     const user = await createUser(parsed.data);
-//     res.status(201).json({
-//       message: 'User registered',
-//       user: { id: user.id, email: user.email }
-//     });
-//   } catch (err: any) {
-//     res.status(500).json({ error: err.message });
-//   }
-// };
-
-
 export const registerUser: RequestHandler = async (req: Request, res: Response) => {
   if (!validateParams(res, 'Validation failed', createUserSchema, req.body)) return;
 
   try {
-    const user = await userService.register(req.body as CreateUserDto);
+    const result = await userService.register(req.body as CreateUserDto);
+
+    // Extract user and token from the returned result
+    const userInstance = result.user;
+    const token = result.token;
 
     const allowedFields = ['id', 'full_name', 'email', 'created_at', 'updated_at'];
-    const serializedUser = GenericSerializer(user, allowedFields);
+    const userData = userInstance.get(); // Raw data from Sequelize instance
+    const serializedUser = GenericSerializer(userData, allowedFields);
 
-    sendResponse(req, res, { user: serializedUser }, 201, "User successfully registered");
+    if (typeof serializedUser.id === 'string') {
+      serializedUser.id = Number(serializedUser.id);
+    }
+
+    // Include the token in the response
+    sendResponse(req, res, { user: serializedUser, token }, 200, "User successfully registered");
   } catch (err: any) {
     sendResponse(req, res, { message: err.message }, 400);
   }
 };
-
-// export const loginUser = async (req: Request, res: Response): Promise<void> => {
-//   try {
-//     const parsed = loginSchema.safeParse(req.body);
-//     if (!parsed.success) {
-//       res.status(400).json({ errors: parsed.error.flatten() });
-//       return;
-//     }
-
-//     const { email, password } = parsed.data;
-//     const user = await authenticateUser(email, password);
-
-//     if (user) {
-//       res.status(200).json({
-//         message: 'Login successful',
-//         user: { id: user.id, email: user.email, firstName: user.firstName },
-//         token: user.token,
-//       });
-//     } else {
-//       res.status(401).json({ message: 'Invalid email or password' });
-//     }
-//   } catch (err: any) {
-//     res.status(500).json({ error: err.message });
-//   }
-// };
 
 export const loginUser = async (req: Request, res: Response) => {
   if (!validateParams(res, 'Validation failed', loginUserSchema, req.body)) return;
 
   try {
     const user = await userService.login(req.body as LoginUserDto);
-    const token = generateToken({ id: user.id, email: user.email });
-    res.status(200).json({ token, user });
+
+    const allowedFields = ['id', 'full_name', 'email', 'created_at', 'updated_at'];
+    const userData = user.get(); // Raw data from Sequelize instance
+    const serializedUser = GenericSerializer(userData, allowedFields);
+
+    // Ensure ID is a number
+    if (typeof serializedUser.id === 'string') {
+      serializedUser.id = Number(serializedUser.id);
+    }
+
+    const token = generateToken({ id: serializedUser.id, email: serializedUser.email });
+
+    // ✅ Send response using your custom utility
+    sendResponse(req, res, { token, user: serializedUser }, 200, "User successfully logged in");
   } catch (err: any) {
-    res.status(401).json({ message: err.message });
+    sendResponse(req, res, { message: err.message }, 401);
   }
 };
+
+
 
 export const forgotPassword = async (req: Request, res: Response) => {
   if (!validateParams(res, 'Validation failed', forgotPasswordSchema, req.body)) return;
@@ -106,87 +82,7 @@ export const forgotPassword = async (req: Request, res: Response) => {
     res.status(400).json({ message: err.message });
   }
 };
-// export const forgotPassword = async (req: Request, res: Response): Promise<void> => {
-//   const { email } = req.body;
 
-//   try {
-//     const user = await prisma.user.findUnique({ where: { email } });
-
-//     if (!user) {
-//       res.status(404).json({ message: 'User not found' });
-//       return;
-//     }
-
-//     const token = crypto.randomBytes(32).toString('hex');
-//     const tokenExpiry = new Date(Date.now() + 3600000); // 1 hour
-
-//     await prisma.user.update({
-//       where: { email },
-//       data: {
-//         resetToken: token,
-//         resetTokenExpiry: tokenExpiry,
-//       },
-//     });
-
-//     const transporter = nodemailer.createTransport({
-//       service: 'Gmail',
-//       auth: {
-//         user: process.env.EMAIL_USER,
-//         pass: process.env.EMAIL_PASS,
-//       },
-//     });
-
-//     const resetLink = `http://localhost:3000/reset-password/${token}`;
-
-//     await transporter.sendMail({
-//       from: process.env.EMAIL_USER,
-//       to: email,
-//       subject: 'Password Reset',
-//       text: `Click the link to reset your password: ${resetLink}`,
-//     });
-
-//     res.status(200).json({ message: 'Password reset link sent to your email', token });
-//   } catch (error) {
-//     console.error('Error in forgot-password route:', error);
-//     res.status(500).json({ message: 'Server error' });
-//   }
-// };
-
-// export const resetPassword = async (req: Request, res: Response): Promise<void> => {
-//   const { token } = req.params;
-//   const { password } = req.body;
-
-//   try {
-//     const user = await prisma.user.findFirst({
-//       where: {
-//         resetToken: token,
-//         resetTokenExpiry: {
-//           gt: new Date(),
-//         },
-//       },
-//     });
-
-//     if (!user) {
-//       res.status(400).json({ message: 'Invalid or expired token' });
-//       return;
-//     }
-
-//     const hashedPassword = await bcrypt.hash(password, 10);
-
-//     await prisma.user.update({
-//       where: { id: user.id },
-//       data: {
-//         password: hashedPassword,
-//         resetToken: null,
-//         resetTokenExpiry: null,
-//       },
-//     });
-
-//     res.status(200).json({ message: 'Password has been reset successfully' });
-//   } catch (error) {
-//     res.status(500).json({ message: 'Server error' });
-//   }
-// };
 
 export const resetPassword = async (req: Request, res: Response) => {
   if (!validateParams(res, 'Validation failed', resetPasswordSchema, req.body)) return;

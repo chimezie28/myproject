@@ -1,0 +1,23 @@
+{
+  "development": {
+    "username": "postgres.djsahykbynicfoocbziw",
+    "password": "D7PKywphIrKE2zNi",
+    "database": "postgres",
+    "host": "aws-0-eu-central-1.pooler.supabase.com",
+    "dialect": "postgres"
+  },
+  "test": {
+    "username": "postgres.djsahykbynicfoocbziw",
+    "password": "D7PKywphIrKE2zNi",
+    "database": "postgres",
+    "host": "aws-0-eu-central-1.pooler.supabase.com",
+    "dialect": "postgres"
+  },
+  "production": {
+    "username": "your_pg_username",
+    "password": "your_pg_password",
+    "database": "your_production_database",
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+  }
+}

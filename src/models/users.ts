@@ -5,7 +5,7 @@ interface UserAttributes {
   id: number;
   full_name: string;
   email: string;
-  encrypted_password: string;
+  password: string;
   reset_password_token?: string;
   unique_session_id?: string;
   created_at?: Date;
@@ -18,7 +18,7 @@ class User extends Model<UserAttributes, UserCreationAttributes> implements User
   public id!: number;
   public full_name!: string;
   public email!: string;
-  public encrypted_password!: string;
+  public password!: string;
   public reset_password_token?: string;
   public unique_session_id?: string;
   public readonly created_at!: Date;
@@ -41,7 +41,7 @@ User.init(
       allowNull: false,
       unique: true,
     },
-    encrypted_password: {
+    password: {
       type: DataTypes.STRING,
       allowNull: false,
     },

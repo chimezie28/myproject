@@ -1,66 +1,96 @@
-import User from '../models/users.js';
-import Product from '../models/products.js';
-import ProductMedia from '../models/product_media.js';
-import ContactInfo from '../models/contact_info.js';
-import PaymentMethods from '../models/payment_methods.js';
-import DeliveryMethods from '../models/delivery_methods.js';
-import Orders from '../models/orders.js';
-import ProductReviews from '../models/product_reviews.js';
-import Chats from '../models/chats.js';
+import User from '../models/users';
+import Product from '../models/products';
+import ProductMedia from '../models/product_media';
+import ContactInfo from '../models/contact_info';
+import PaymentMethod from '../models/payment_methods';
+import DeliveryMethod from '../models/delivery_methods';
+import Order from '../models/orders';
+import ProductReview from '../models/product_reviews';
+import Chat from '../models/chats';
+import AnimalSpecies from '../models/animal_species';
+import AnimalBreed from '../models/animal_breeds';
+import OrderPayment from '../models/orderPayment';
+import OrderDelivery from '../models/orderDelivery';
 
-// Define relationships
 const associateModels = () => {
+  // User ↔ Product
   User.hasMany(Product, { foreignKey: 'user_id', as: 'products' });
   Product.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 
+  // Product ↔ ProductMedia
   Product.hasMany(ProductMedia, { foreignKey: 'product_id', as: 'media' });
   ProductMedia.belongsTo(Product, { foreignKey: 'product_id', as: 'product' });
 
-  // Users and ContactInfo
+  // User ↔ ContactInfo
   User.hasOne(ContactInfo, { foreignKey: 'user_id', as: 'contact_info' });
   ContactInfo.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 
-  // PaymentMethods and Orders
-  PaymentMethods.hasMany(Orders, { foreignKey: 'payment_method_id', as: 'orders' });
-  Orders.belongsTo(PaymentMethods, { foreignKey: 'payment_method_id', as: 'payment_method' });
+  // PaymentMethod ↔ Order
+  PaymentMethod.hasMany(Order, { foreignKey: 'payment_method', as: 'orders' });
+  Order.belongsTo(PaymentMethod, { foreignKey: 'payment_method', as: 'paymentMethod' });  // Fixed collision here
 
-  // DeliveryMethods and Orders
-  DeliveryMethods.hasMany(Orders, { foreignKey: 'delivery_method_id', as: 'orders' });
-  Orders.belongsTo(DeliveryMethods, { foreignKey: 'delivery_method_id', as: 'delivery_method' });
+  // DeliveryMethod ↔ Order
+  DeliveryMethod.hasMany(Order, { foreignKey: 'delivery_method', as: 'orders' });
+  Order.belongsTo(DeliveryMethod, { foreignKey: 'delivery_method', as: 'deliveryMethod' });
 
-  // Orders and Products (through Orders)
-  Product.hasMany(Orders, { foreignKey: 'product_id', as: 'orders' });
-  Orders.belongsTo(Product, { foreignKey: 'product_id', as: 'product' });
+  // Product ↔ Order
+  Product.hasMany(Order, { foreignKey: 'product_id', as: 'orders' });
+  Order.belongsTo(Product, { foreignKey: 'product_id', as: 'product' });
 
-  // Users and Orders (buyers and sellers)
-  User.hasMany(Orders, { foreignKey: 'buyer_id', as: 'buyer_orders' });
-  Orders.belongsTo(User, { foreignKey: 'buyer_id', as: 'buyer' });
+  // User ↔ Order (as Buyer)
+  User.hasMany(Order, { foreignKey: 'buyer_id', as: 'buyer_orders' });
+  Order.belongsTo(User, { foreignKey: 'buyer_id', as: 'buyer' });
 
-  User.hasMany(Orders, { foreignKey: 'seller_id', as: 'seller_orders' });
-  Orders.belongsTo(User, { foreignKey: 'seller_id', as: 'seller' });
+  // User ↔ Order (as Seller)
+  User.hasMany(Order, { foreignKey: 'seller_id', as: 'seller_orders' });
+  Order.belongsTo(User, { foreignKey: 'seller_id', as: 'seller' });
 
-  // ProductReviews and Products
-  Product.hasMany(ProductReviews, { foreignKey: 'product_id', as: 'reviews' });
-  ProductReviews.belongsTo(Product, { foreignKey: 'product_id', as: 'product' });
+  // Product ↔ ProductReview
+  Product.hasMany(ProductReview, { foreignKey: 'product_id', as: 'reviews' });
+  ProductReview.belongsTo(Product, { foreignKey: 'product_id', as: 'product' });
 
-  // Users and ProductReviews
-  User.hasMany(ProductReviews, { foreignKey: 'user_id', as: 'reviews' });
-  ProductReviews.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+  // User ↔ ProductReview
+  User.hasMany(ProductReview, { foreignKey: 'user_id', as: 'reviews' });
+  ProductReview.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 
-  // Chats and Users
-  User.hasMany(Chats, { foreignKey: 'sender_id', as: 'sent_chats' });
-  Chats.belongsTo(User, { foreignKey: 'sender_id', as: 'sender' });
+  // Chat ↔ User (Sender & Receiver)
+  User.hasMany(Chat, { foreignKey: 'sender_id', as: 'sent_chats' });
+  Chat.belongsTo(User, { foreignKey: 'sender_id', as: 'sender' });
 
-  User.hasMany(Chats, { foreignKey: 'receiver_id', as: 'received_chats' });
-  Chats.belongsTo(User, { foreignKey: 'receiver_id', as: 'receiver' });
+  User.hasMany(Chat, { foreignKey: 'receiver_id', as: 'received_chats' });
+  Chat.belongsTo(User, { foreignKey: 'receiver_id', as: 'receiver' });
 
-  // Product and Chats (if a product is involved in the chat)
-  Product.hasMany(Chats, { foreignKey: 'product_id', as: 'product_chats' });
-  Chats.belongsTo(Product, { foreignKey: 'product_id', as: 'product' });
+  // Chat ↔ Product (optional)
+  Product.hasMany(Chat, { foreignKey: 'product_id', as: 'product_chats' });
+  Chat.belongsTo(Product, { foreignKey: 'product_id', as: 'product' });
 
-  // Orders and Chats (if a chat is related to an order)
-  Orders.hasMany(Chats, { foreignKey: 'order_id', as: 'order_chats' });
-  Chats.belongsTo(Orders, { foreignKey: 'order_id', as: 'order' });
+  // Chat ↔ Order (optional)
+  Order.hasMany(Chat, { foreignKey: 'order_id', as: 'order_chats' });
+  Chat.belongsTo(Order, { foreignKey: 'order_id', as: 'order' });
+
+  // Product ↔ AnimalBreed
+  AnimalBreed.hasMany(Product, { foreignKey: 'breed_id', as: 'products' });
+  Product.belongsTo(AnimalBreed, { foreignKey: 'breed_id', as: 'breed' });
+
+  // Product ↔ AnimalSpecies
+  AnimalSpecies.hasMany(Product, { foreignKey: 'species_id', as: 'products' });
+  Product.belongsTo(AnimalSpecies, { foreignKey: 'species_id', as: 'species' });
+
+  // OrderPayment ↔ PaymentMethod
+  PaymentMethod.hasMany(OrderPayment, { foreignKey: 'payment_method_id', as: 'order_payments' });
+  OrderPayment.belongsTo(PaymentMethod, { foreignKey: 'payment_method_id', as: 'paymentMethod' });
+
+  // OrderDelivery ↔ DeliveryMethod
+  DeliveryMethod.hasMany(OrderDelivery, { foreignKey: 'delivery_method', as: 'order_deliveries' });
+  OrderDelivery.belongsTo(DeliveryMethod, { foreignKey: 'delivery_method', as: 'deliveryMethod' });
+
+  // Order ↔ OrderPayment
+  Order.hasMany(OrderPayment, { foreignKey: 'order_id', as: 'order_payments' });
+  OrderPayment.belongsTo(Order, { foreignKey: 'order_id', as: 'order' });
+
+  // Order ↔ OrderDelivery
+  Order.hasMany(OrderDelivery, { foreignKey: 'order_id', as: 'order_deliveries' });
+  OrderDelivery.belongsTo(Order, { foreignKey: 'order_id', as: 'order' });
 };
 
 export default associateModels;
